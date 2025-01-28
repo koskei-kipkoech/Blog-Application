@@ -1,0 +1,72 @@
+.about {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.aboutContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Make container cover the full viewport */
+}
+
+.aboutImage {
+    width: 100%;
+    height: 100%; /* Make image fill the full height */
+    object-fit: cover; /* Ensures the image covers the container while maintaining aspect ratio */
+    display: block;
+    filter: brightness(60%); /* Slightly darken the image for better text contrast */
+}
+
+.aboutContent {
+    position: absolute;
+    top: 20%; /* Adjust vertical position as needed */
+    left: 50%;
+    transform: translate(-50%, -20%);
+    text-align: center;
+    color: #fff; /* White text for contrast */
+    z-index: 2;
+    width: 90%; /* Adjust width as needed */
+}
+
+.aboutContent h1,
+.aboutContent h2 {
+    margin: 0 0 1rem;
+    font-size: 3.5rem; /* Increased font size for headings */
+    font-weight: bold;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.7); /* Added stronger text shadow for readability */
+}
+
+.aboutContent p {
+    margin: 0 0 2rem;
+    font-size: 1.5rem; /* Increased font size for paragraph text */
+    line-height: 1.6;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.7); /* Stronger text shadow for readability */
+}
+
+.aboutContent ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.aboutContent ul li {
+    font-size: 1.5rem; /* Increased font size for list items */
+    margin: 0.8rem 0;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.7); /* Stronger text shadow for readability */
+}
+
+  /* Optional: Make the image slightly darker for better text visibility */
+.aboutContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Darker overlay for better contrast */
+    z-index: 1;
+}
