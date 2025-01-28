@@ -1,0 +1,71 @@
+/* Container for the entire form */
+.postform-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: url('https://img.freepik.com/free-photo/orange-purple-confetti-with-copy-space_23-2148294709.jpg?t=st=1738056679~exp=1738060279~hmac=c3e7c0bbded54dbee3a0d731e59378e480cc48af568427520eaa582ee8e01bb9&w=1380');
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form title */
+.form-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* General form styling */
+.post-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Form group for label and input/textarea */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+input,
+textarea,
+select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #007bff;
+}
+
+/* Submit button styling */
+.submit-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
+}
