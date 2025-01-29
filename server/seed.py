@@ -5,7 +5,7 @@ from faker import Faker
 from datetime import datetime
 
 from app import app
-from models import db, User, Author, Post, Category, Comment, PostCategory
+from models import db, User, UserType, Post, Category, Comment, PostCategory
 
 fake = Faker()
 
@@ -16,8 +16,19 @@ with app.app_context():
     PostCategory.query.delete()
     Post.query.delete()
     Category.query.delete()
-    Author.query.delete()
     User.query.delete()
+    UserType.query.delete()
+
+    # Creating UserTypes
+    print("Creating user types...")
+    user_types = ['Reader', 'Admin', 'Author']  # Example user types
+    user_type_objects = []
+    for user_type_name in user_types:
+        user_type = UserType(type_name=user_type_name)
+        user_type_objects.append(user_type)
+
+    db.session.add_all(user_type_objects)
+    db.session.commit()
 
     # Creating Users
     print("Creating users...")
@@ -26,21 +37,11 @@ with app.app_context():
         username = fake.first_name()
         email = fake.email()
         password = fake.password()
-        user = User(username=username, email=email, password=password)
+        user_type = fake.random_element(user_type_objects)
+        user = User(username=username, email=email, password_hash=fake.password(), user_type=user_type)
         users.append(user)
 
     db.session.add_all(users)
-    db.session.commit()
-
-    # Creating Authors
-    print("Creating authors...")
-    authors = []
-    for user in users:
-        bio = fake.paragraph(nb_sentences=3)
-        author = Author(bio=bio, user_id=user.id)
-        authors.append(author)
-
-    db.session.add_all(authors)
     db.session.commit()
 
     # Creating Categories
@@ -55,6 +56,7 @@ with app.app_context():
     db.session.commit()
 
     # Creating posts
+    # Creating posts
     print("Creating posts...")
     posts = []
     for _ in range(20):  # Create 20 posts for example
@@ -62,8 +64,7 @@ with app.app_context():
         content = fake.paragraph(nb_sentences=8)
         preview = content[:25] + '...'  # Truncate the content for preview
         minutes_to_read = randint(1, 10)
-        author = fake.random_element(authors)
-        category = fake.random_element(category_objects)
+        user = fake.random_element(users)  # Get a random user
         image = fake.image_url()  # This will generate a random image URL
 
         post = Post(
@@ -71,8 +72,7 @@ with app.app_context():
             content=content,
             preview=preview,
             minutes_to_read=minutes_to_read,
-            author_id=author.id,
-            category_id=category.id,
+            user_id=user.id,  # Link to user
             image=image,  # Add the image URL here
             is_favourite=False,
             is_liked=False,
@@ -95,6 +95,7 @@ with app.app_context():
 
     db.session.add_all(post_categories)
     db.session.commit()
+
 
     # Creating Comments
     print("Creating comments...")
