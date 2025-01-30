@@ -31,81 +31,88 @@ export default function Postform() {
             fetchCategories();
         }, []);
         
-
-    const handleChange = (e) => {
-        const { name, value, checked } = e.target;
-    
-        if (name === 'category') {
+        const handleCategoryClick = (categoryId) => {
             setFormData((prevData) => {
-                let newCategories = [...prevData.category];
-        
-                if (checked) {
-                    // Add category to the array if checked and it's not already there
-                    if (!newCategories.includes(value)) {
-                        newCategories.push(value);
-                    }
+                const newCategories = new Set(prevData.category);
+                if (newCategories.has(categoryId)) {
+                    newCategories.delete(categoryId);
                 } else {
-                    // Remove category from array if unchecked
-                    newCategories = newCategories.filter((category) => category !== value);
+                    newCategories.add(categoryId);
                 }
-    
-                return {
-                    ...prevData,
-                    category: newCategories, // Update category array
-                };
+                return { ...prevData, category: Array.from(newCategories) };
             });
-        } else {
-            setFormData((prevData) => ({
-                ...prevData,
-                [name]: value, // For other fields, update normally
-            }));
-        }
-    };
-    
-    
-    
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Token is required for authentication.');
-            return;
-        }
-
-        const { title, image, content, category, preview, minutes_to_read } = formData;
-
-        const postData = {
-            title,
-            content,
-            preview,
-            minutes_to_read,
-            image,
-            category,  // Send selected categories as an array
         };
+        
 
-        try {
-            const response = await fetch('/post', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(postData)
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                alert('Post created successfully');
+        const handleChange = (e) => {
+            const { name, value, checked } = e.target;
+            const categoryId = Number(value); // Convert value to number
+        
+            if (name === "category") {
+                setFormData((prevData) => {
+                    let newCategories = [...prevData.category];
+        
+                    if (checked) {
+                        if (!newCategories.includes(categoryId)) {
+                            newCategories.push(categoryId);
+                        }
+                    } else {
+                        newCategories = newCategories.filter((id) => id !== categoryId);
+                    }
+        
+                    return { ...prevData, category: newCategories };
+                });
             } else {
-                alert(`Error: ${data.message}`);
+                setFormData((prevData) => ({ ...prevData, [name]: value }));
             }
-        } catch (error) {
-            console.error('Error creating post:', error);
-            alert('There was an error creating the post.');
-        }
-    };
+        };
+        
+        
+        
+        
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+        
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Token is required for authentication.');
+                return;
+            }
+        
+            const { title, image, content, category, preview, minutes_to_read } = formData;
+        
+            const postData = {
+                title,
+                content,
+                preview,
+                minutes_to_read,
+                image,
+                category,  // Send category IDs as an array
+            };
+        
+            try {
+                const response = await fetch('http://127.0.0.1:5555/post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(postData)
+                });
+        
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Post created successfully');
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('There was an error creating the post.');
+            }
+        };
+        
 
     return (
         <div className="postform-container">
@@ -149,27 +156,20 @@ export default function Postform() {
                     ></textarea>
                 </div>
 
-                <div className="form-group">
-                    <label>Category</label>
-                    <div>
-                        {categories.map((category) => (
-                            <div key={category.id}>
-                                <input
-                                    type="checkbox"
-                                    id={`category-${category.id}`}
-                                    name="category"  // Keep name as 'category'
-                                    value={category.id}  // The value of the checkbox is the category id
-                                    checked={formData.category.includes(category.id)}  // Check if this category is selected
-                                    onChange={handleChange}  // Handle change with handleChange function
-                                />
-                                <label htmlFor={`category-${category.id}`}>{category.name}</label>
-                            </div>
-                        ))}
-                    </div>
+                <div>
+                    <label htmlFor=''>Categories Available</label>
+                    {categories.map((category) => (
+                        <div key={category.id} onClick={() => handleCategoryClick(category.id)}>
+                            <input
+                                type="checkbox"
+                                id={`category-${category.id}`}
+                                checked={formData.category.includes(category.id)}
+                                readOnly
+                            />
+                            <label htmlFor={`category-${category.id}`}>{category.name}</label>
+                        </div>
+                    ))}
                 </div>
-
-
-
                 <div className="form-group">
                     <label htmlFor="preview">Post Preview</label>
                     <textarea

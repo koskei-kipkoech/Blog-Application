@@ -69,3 +69,51 @@ select:focus {
 .submit-button:hover {
     background-color: #0056b3;
 }
+/* Hide default checkbox */
+input[type="checkbox"] {
+    display: none;
+}
+
+/* Style the label to act as the checkbox */
+input[type="checkbox"] + label {
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    line-height: 20px;
+    font-size: 16px;
+    color: #333; /* Default label color */
+    transition: color 0.3s ease-in-out;
+}
+
+/* Custom checkbox box */
+input[type="checkbox"] + label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #333;
+    background-color: #e0e7e5;
+    border-radius: 4px;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+/* Change color when checked */
+input[type="checkbox"]:checked + label {
+    color: #e1ebe2; /* Change label color when checked */
+    font-weight: bold;
+}
+
+/* Show checkmark when checked */
+input[type="checkbox"]:checked + label:before {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    content: "\2713"; /* Unicode for checkmark */
+    color: teal;
+    text-align: center;
+    font-size: 14px;
+    line-height: 18px;
+}
+
+
