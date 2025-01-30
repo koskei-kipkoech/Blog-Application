@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './register.css'
 import React,{useState} from 'react';
 
@@ -8,6 +8,7 @@ export default function Register(){
     const [password,setPassword] = useState('');
     const [userType,setUserType] = useState('');
     const [error,setError] = useState(null);
+    const navigate = useNavigate()
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -29,6 +30,8 @@ export default function Register(){
             .then((data) => {
                 if (data.message){
                     console.log(data.message);
+                    alert("Registration successful!")
+                    navigate('/login');
                 }
             })
             .catch((err) => {
