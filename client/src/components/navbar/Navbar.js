@@ -27,6 +27,7 @@ export default function TopBar() {
             <div className="topRight">
                 <Link className="link" to='settings'><i className="topSearchIcon fa-solid fa-gear"></i></Link>
                 <Link className="link" to='/'><i className="topSearchIcon fa-solid fa-magnifying-glass"></i></Link>
+                <Link className="link" id='login' to='/login'>Login</Link>
             </div>
         </div>
     )
