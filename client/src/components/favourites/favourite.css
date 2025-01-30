@@ -58,3 +58,13 @@
 .main-content li {
     margin-bottom: 15px;
 }
+.fav{
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+}
+.likeds{
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
