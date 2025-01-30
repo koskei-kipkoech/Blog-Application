@@ -17,7 +17,7 @@ export default function About() {
                         Music, Technology, Projects, News and also Lifestyle. My goal is to provide you with valuable insights,
                         inspiration, and updates that enrich your life and spark new ideas.
                     </p>
-                    <h2>Why Follow Us?</h2>
+                    <h2>Why Follow Me?</h2>
                     <ul>
                         <li>👉 Regularly updated with fresh, high-quality content</li>
                         <li>👉 Diverse topics to suit a wide range of interests</li>
