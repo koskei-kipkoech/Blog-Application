@@ -121,7 +121,6 @@ def update_user():
 def delete_user(current_user):
     if not current_user:
         return jsonify({"message": "User not found"}), 404
-
     db.session.delete(current_user)
     db.session.commit()
 
@@ -203,71 +202,11 @@ def get_post(post_id):
     return jsonify(post_data), 200
 
 
-# Get Single Post
-# @app.route('/post/<int:post_id>', methods=['GET'])
-# def get_post(post_id):
-#     post = Post.query.get(post_id)
-#     if not post:
-#         return jsonify({"message": "Post not found"}), 404
-
-#     post_data = post.to_dict()
-#     post_data['user_id'] = post.user.username  # Add the username from the User model
-
-#     return jsonify(post_data), 200
-
-
-#comment for specific post
-# @app.route('/commentt/posts/<int:post_id>', methods=['GET'])
-# def get_comments_for_post(post_id):
-#     post = Post.query.get(post_id)
-#     if not post:
-#         return jsonify({"message": "Post not found"}), 404
-#     comments = post.comments  
-#     return jsonify([comment.to_dict() for comment in comments]), 200
-
-
-# @app.route('/post', methods=['POST'])
-# @token_required
-# def create_post(current_user):
-#     data = request.get_json()
-#     required_fields = ['title', 'content', 'preview', 'minutes_to_read']
-#     missing_fields = [field for field in required_fields if field not in data or not data[field]]
-#     if missing_fields:
-#         return jsonify({"message": f"Missing or empty fields: {', '.join(missing_fields)}"}), 400
-#     try:
-#         minutes_to_read = int(data['minutes_to_read'])
-#         if minutes_to_read <= 0:
-#             raise ValueError
-#     except ValueError:
-#         return jsonify({"message": "minutes_to_read must be a positive integer"}), 400
-#     title = data['title'].strip()
-#     content = data['content'].strip()
-#     preview = data['preview'].strip()
-#     image = data.get('image', None)  
-#     is_favourite = data.get('is_favourite', False)  
-#     is_liked = data.get('is_liked', False)  
-#     published = data.get('published', False)  
-#     post = Post(
-#         title=title,
-#         content=content,
-#         preview=preview,
-#         image=image,
-#         minutes_to_read=minutes_to_read,
-#         is_favourite=is_favourite,
-#         is_liked=is_liked,
-#         published=published,
-#         user_id=current_user.id
-#     )
-#     db.session.add(post)
-#     db.session.commit()
-
-#     return jsonify(post.to_dict()), 201
-
 @app.route('/post', methods=['POST'])
 @token_required
 def create_post(current_user):
     data = request.get_json()
-    required_fields = ['title', 'content', 'preview', 'minutes_to_read', 'category']  # Include 'category'
+    required_fields = ['title', 'content', 'preview', 'minutes_to_read', 'category']  
     missing_fields = [field for field in required_fields if field not in data or not data[field]]
     if missing_fields:
         return jsonify({"message": f"Missing or empty fields: {', '.join(missing_fields)}"}), 400
@@ -278,7 +217,6 @@ def create_post(current_user):
             raise ValueError
     except ValueError:
         return jsonify({"message": "minutes_to_read must be a positive integer"}), 400
-
     title = data['title'].strip()
     content = data['content'].strip()
     preview = data['preview'].strip()
@@ -286,16 +224,10 @@ def create_post(current_user):
     is_favourite = data.get('is_favourite', False)  
     is_liked = data.get('is_liked', False)  
     published = data.get('published', False)  
-
-    # Fetch categories based on IDs provided in the 'category' field
     category_ids = data['category']
     categories = Category.query.filter(Category.id.in_(category_ids)).all()
-
     if len(categories) != len(category_ids):
-        # If any of the category IDs are invalid, return an error
         return jsonify({"message": "Some categories were not found"}), 400
-
-    # Create the post
     post = Post(
         title=title,
         content=content,
@@ -307,30 +239,27 @@ def create_post(current_user):
         published=published,
         user_id=current_user.id
     )
-
-    # Associate categories with the post
     post.categories = categories
-
     db.session.add(post)
     db.session.commit()
-
     return jsonify(post.to_dict()), 201
+
 
 @app.route('/post/<int:post_id>', methods=['PATCH'])
 @token_required
 def update_post(current_user, post_id):
-    post = db.session.get(Post,post_id)
-
+    post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
     data = request.get_json()
-    if 'title' in data:
+    # Updating post fields
+    if 'title' in data and data['title'].strip():
         post.title = data['title'].strip()
-    if 'content' in data:
+    if 'content' in data and data['content'].strip():
         post.content = data['content'].strip()
-    if 'preview' in data:
+    if 'preview' in data and data['preview'].strip():
         post.preview = data['preview'].strip()
-    if 'image' in data:
+    if 'image' in data and data['image']:
         post.image = data['image']
     if 'minutes_to_read' in data:
         try:
@@ -346,6 +275,8 @@ def update_post(current_user, post_id):
         post.is_liked = bool(data['is_liked'])
     if 'published' in data:
         post.published = bool(data['published'])
+    
+    # Updating categories
     if 'categories' in data:
         category_ids = data['categories']
         if not isinstance(category_ids, list):
@@ -353,7 +284,9 @@ def update_post(current_user, post_id):
         valid_categories = Category.query.filter(Category.id.in_(category_ids)).all()
         if len(valid_categories) != len(category_ids):
             return jsonify({"message": "One or more categories are invalid"}), 400
-        post.categories = valid_categories 
+        post.categories = valid_categories  
+    
+    # Updating comments (optional)
     if 'comments' in data:
         comments_data = data['comments']
         if not isinstance(comments_data, list):
@@ -367,10 +300,12 @@ def update_post(current_user, post_id):
                 post_id=post.id
             )
             db.session.add(new_comment)
-
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to update the post.", "error": str(e)}), 500
     return jsonify(post.to_dict()), 200
-
 
 
 @app.route('/post/<int:post_id>', methods=['DELETE'])
@@ -403,14 +338,12 @@ def toggle_like_post(current_user, post_id):
     post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
-
     data = request.get_json()
     if data is None:
-        return jsonify({"message": "Invalid request"}), 400  # Handle missing data
-
+        return jsonify({"message": "Invalid request"}), 400  
     post.is_liked = not post.is_liked  
     db.session.commit()
-    return jsonify({"is_liked": post.is_liked}), 200  # Return the updated status
+    return jsonify({"is_liked": post.is_liked}), 200  
 
 
 @app.route('/post/<int:post_id>/favorite', methods=['PATCH'])
@@ -419,14 +352,12 @@ def toggle_favorite_post(current_user, post_id):
     post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
-
     data = request.get_json()
     if data is None:
-        return jsonify({"message": "Invalid request"}), 400  # Handle missing data
-
+        return jsonify({"message": "Invalid request"}), 400  
     post.is_favourite = not post.is_favourite  
     db.session.commit()
-    return jsonify({"is_favourite": post.is_favourite}), 200  # Return the updated status
+    return jsonify({"is_favourite": post.is_favourite}), 200  
 
 @app.route('/comments/post/<int:post_id>', methods=['GET'])
 def get_comments_for_post(post_id):
@@ -450,7 +381,6 @@ def add_comment(post_id):
     post = Post.query.get(post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
-
     data = request.get_json()
     new_comment = Comment(content=data['content'], post_id=post_id)
     db.session.add(new_comment)
