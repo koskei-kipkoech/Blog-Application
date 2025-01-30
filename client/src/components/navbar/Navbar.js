@@ -21,7 +21,7 @@ export default function Navbarr() {
                     {user ? (
                         <>
                             <li className="topListItem"><Link className="link" to="/postform">ADDPOST</Link></li>
-                            <li className="topListItem"><Link className="link" to="/postdetails">FAVOURITES</Link></li>
+                            <li className="topListItem"><Link className="link" to="/">FAVOURITES</Link></li>
                             <li className="topListItem"><Link className="link" to="/favliked">FAV/LIKED</Link></li>
                             <li className="topListItem" onClick={logout} style={{ cursor: "pointer" }}>LOGOUT</li>
                         </>
@@ -41,7 +41,7 @@ export default function Navbarr() {
                         </Link>
                     </>
                 ) : (
-                    <Link className="link" to="/login" id="login">Login</Link>
+                    <Link className="link" to="/register" id="login">SigUp</Link>
                 )}
             </div>
         </div>
