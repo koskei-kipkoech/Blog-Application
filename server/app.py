@@ -153,6 +153,13 @@ def get_posts_by_user(user_id):
     return jsonify([post.to_dict() for post in posts]), 200
 
 
+@app.route('/categories', methods=['GET'])
+def get_categories():
+    categories = Category.query.all()  
+    category_list = [{"id": category.id, "name": category.name} for category in categories]
+    return jsonify(category_list)
+
+
 #post in a category
 @app.route('/posts/category/<int:category_id>', methods=['GET'])
 def get_posts_by_category(category_id):
