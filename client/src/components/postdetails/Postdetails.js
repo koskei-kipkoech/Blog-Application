@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
 import { useState, useEffect } from 'react';
 
@@ -7,7 +7,9 @@ export default function Postdetails() {
     const [post, setPost] = useState(null);
     const [newComment, setNewComment] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
+    const userId = localStorage.getItem('userId');
     useEffect(() => {
         fetch(`http://127.0.0.1:5555/post/${postId}`)
             .then((response) => response.json())
