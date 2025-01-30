@@ -78,8 +78,14 @@ def login_user():
     if not user or not user.check_password(password):
         return jsonify({"message": "Invalid credentials"}), 401
 
-    token = jwt.encode({'user_id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, SECRET_KEY, algorithm='HS256')
-    return jsonify({"message": "Login successful", "token": token}), 200
+    token = jwt.encode({'user_id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)}, SECRET_KEY, algorithm='HS256')
+    response = jsonify({
+        'message': 'Login successful',
+        'user' : { 'id' : user.id,'username' : user.username},
+        'token' :token
+        })
+    response.set_cookie('token',token, httponly=True, secure=True)
+    return response, 200
 
 
 @app.route('/updateuser', methods=['PATCH'])
@@ -220,20 +226,59 @@ def get_post(post_id):
 #     return jsonify([comment.to_dict() for comment in comments]), 200
 
 
+# @app.route('/post', methods=['POST'])
+# @token_required
+# def create_post(current_user):
+#     data = request.get_json()
+#     required_fields = ['title', 'content', 'preview', 'minutes_to_read']
+#     missing_fields = [field for field in required_fields if field not in data or not data[field]]
+#     if missing_fields:
+#         return jsonify({"message": f"Missing or empty fields: {', '.join(missing_fields)}"}), 400
+#     try:
+#         minutes_to_read = int(data['minutes_to_read'])
+#         if minutes_to_read <= 0:
+#             raise ValueError
+#     except ValueError:
+#         return jsonify({"message": "minutes_to_read must be a positive integer"}), 400
+#     title = data['title'].strip()
+#     content = data['content'].strip()
+#     preview = data['preview'].strip()
+#     image = data.get('image', None)  
+#     is_favourite = data.get('is_favourite', False)  
+#     is_liked = data.get('is_liked', False)  
+#     published = data.get('published', False)  
+#     post = Post(
+#         title=title,
+#         content=content,
+#         preview=preview,
+#         image=image,
+#         minutes_to_read=minutes_to_read,
+#         is_favourite=is_favourite,
+#         is_liked=is_liked,
+#         published=published,
+#         user_id=current_user.id
+#     )
+#     db.session.add(post)
+#     db.session.commit()
+
+#     return jsonify(post.to_dict()), 201
+
 @app.route('/post', methods=['POST'])
 @token_required
 def create_post(current_user):
     data = request.get_json()
-    required_fields = ['title', 'content', 'preview', 'minutes_to_read']
+    required_fields = ['title', 'content', 'preview', 'minutes_to_read', 'category']  # Include 'category'
     missing_fields = [field for field in required_fields if field not in data or not data[field]]
     if missing_fields:
         return jsonify({"message": f"Missing or empty fields: {', '.join(missing_fields)}"}), 400
+
     try:
         minutes_to_read = int(data['minutes_to_read'])
         if minutes_to_read <= 0:
             raise ValueError
     except ValueError:
         return jsonify({"message": "minutes_to_read must be a positive integer"}), 400
+
     title = data['title'].strip()
     content = data['content'].strip()
     preview = data['preview'].strip()
@@ -241,6 +286,16 @@ def create_post(current_user):
     is_favourite = data.get('is_favourite', False)  
     is_liked = data.get('is_liked', False)  
     published = data.get('published', False)  
+
+    # Fetch categories based on IDs provided in the 'category' field
+    category_ids = data['category']
+    categories = Category.query.filter(Category.id.in_(category_ids)).all()
+
+    if len(categories) != len(category_ids):
+        # If any of the category IDs are invalid, return an error
+        return jsonify({"message": "Some categories were not found"}), 400
+
+    # Create the post
     post = Post(
         title=title,
         content=content,
@@ -252,11 +307,14 @@ def create_post(current_user):
         published=published,
         user_id=current_user.id
     )
+
+    # Associate categories with the post
+    post.categories = categories
+
     db.session.add(post)
     db.session.commit()
 
     return jsonify(post.to_dict()), 201
-
 
 @app.route('/post/<int:post_id>', methods=['PATCH'])
 @token_required
@@ -330,37 +388,45 @@ def delete_post(current_user, post_id):
 @token_required
 def get_liked_posts(current_user):
     liked_posts = Post.query.filter_by(is_liked=True).all()
-    return jsonify([post.to_dict() for post in liked_posts]), 200
+    return jsonify([{"id": post.id, "title": post.title, "image": post.image, "preview": post.preview} for post in liked_posts])
 
 
 @app.route('/posts/favorites', methods=['GET'])
 @token_required
 def get_favorite_posts(current_user):
     favorite_posts = Post.query.filter_by(is_favourite=True).all()
-    return jsonify([post.to_dict() for post in favorite_posts]), 200
-
+    return jsonify([{"id": post.id, "title": post.title, "image": post.image, "preview": post.preview} for post in favorite_posts])
 
 @app.route('/post/<int:post_id>/like', methods=['PATCH'])
 @token_required
 def toggle_like_post(current_user, post_id):
-    post = db.session.get(Post,post_id)
+    post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
+
+    data = request.get_json()
+    if data is None:
+        return jsonify({"message": "Invalid request"}), 400  # Handle missing data
+
     post.is_liked = not post.is_liked  
     db.session.commit()
-    return jsonify({"message": f"Post {'liked' if post.is_liked else 'unliked'} successfully"}), 200
+    return jsonify({"is_liked": post.is_liked}), 200  # Return the updated status
 
 
 @app.route('/post/<int:post_id>/favorite', methods=['PATCH'])
 @token_required
 def toggle_favorite_post(current_user, post_id):
-    post = db.session.get(Post,post_id)
+    post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"message": "Post not found"}), 404
+
+    data = request.get_json()
+    if data is None:
+        return jsonify({"message": "Invalid request"}), 400  # Handle missing data
+
     post.is_favourite = not post.is_favourite  
     db.session.commit()
-    return jsonify({"message": f"Post {'added to favorites' if post.is_favourite else 'removed from favorites'} successfully"}), 200
-
+    return jsonify({"is_favourite": post.is_favourite}), 200  # Return the updated status
 
 @app.route('/comments/post/<int:post_id>', methods=['GET'])
 def get_comments_for_post(post_id):
