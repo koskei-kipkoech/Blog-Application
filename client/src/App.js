@@ -12,6 +12,7 @@ import Settings from "./components/settings/Setting";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import UpdatePost from "./components/updatepost/Update";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           {/* Protect these routes, only accessible if logged in */}
           <Route path="/postdetails/:postId" element={<ProtectedRoute element={<Postdetails />} />} />
           <Route path="/postform" element={<ProtectedRoute element={<Postform />} />} />
+          <Route path="/update/:postId" element={<ProtectedRoute element={<UpdatePost />} />} />
           <Route path="/postlist" element={<ProtectedRoute element={<Postlist />} />} />
           <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
           <Route path="/favliked" element={<ProtectedRoute element={<FavouriteLikedPost />} />} />
