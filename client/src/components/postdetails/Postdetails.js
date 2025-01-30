@@ -1,74 +1,95 @@
+import { useParams } from 'react-router-dom';
 import './postdetail.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Postdetails() {
-    // Static post data
-    const post = {
-        title: "Understanding React State",
-        image: "https://img.freepik.com/free-photo/green-confetti-yellow-background_23-2148294815.jpg?t=st=1738062277~exp=1738065877~hmac=d2d44c27fff51b770c760cfbaf33664d126bfd9ec03a7a050a0daee071e53df8&w=1480",
-        content: "React state is an essential concept that helps in handling data changes dynamically in components...",
-        author: "John Doe",
-        category: "Technology",
-        createdAt: "2025-01-28T14:20:00Z"
+    const { postId } = useParams();
+    const [post, setPost] = useState(null);
+    const [newComment, setNewComment] = useState('');
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        fetch(`http://127.0.0.1:5555/post/${postId}`)
+            .then((response) => response.json())
+            .then((data) => setPost(data))
+            .catch((error) => console.error('Error fetching post details', error));
+    }, [postId]);
+
+    const handleCommentChange = (e) => {
+        setNewComment(e.target.value);
     };
 
-    // Static comments data
-    const [comments, setComments] = useState([
-        { id: 1, username: "Alice", content: "Great article! It was very helpful." },
-        { id: 2, username: "Bob", content: "I love how you explained React state in such a simple way." },
-    ]);
-
-    const [newComment, setNewComment] = useState("");
-
-    // Handle comment submission
-    const handleCommentSubmit = (e) => {
+    const handleSubmitComment = async (e) => {
         e.preventDefault();
-        if (newComment.trim() === "") return;
+        if (!newComment.trim()) {
+            setError("Comment cannot be empty.");
+            return;
+        }
 
-        const newCommentData = {
-            id: comments.length + 1, // Incremental ID
-            username: "Guest", // Placeholder username
-            content: newComment,
-        };
+        try {
+            const response = await fetch(`http://127.0.0.1:5555/comments/post/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: newComment }), // Send the new comment
+            });
 
-        setComments([...comments, newCommentData]);
-        setNewComment(""); // Clear the input field
+            if (!response.ok) {
+                throw new Error("Failed to add comment.");
+            }
+
+            const addedComment = await response.json();
+            setPost((prevPost) => ({
+                ...prevPost,
+                comments: [...prevPost.comments, addedComment], // Update UI with new comment
+            }));
+
+            setNewComment('');
+            setError('');
+        } catch (err) {
+            console.error('Error adding comment:', err);
+            setError("Failed to add comment.");
+        }
     };
+
+    if (!post) {
+        return <p>Loading post...</p>;
+    }
 
     return (
         <div className="post-container">
             <h1 className="post-title">{post.title}</h1>
+            <span className="post-author">Author: {post.user_id}</span>
             <img src={post.image} alt={post.title} className="post-image" />
             <p className="post-content">{post.content}</p>
-
             <div className="post-meta">
-                <span className="post-author">Author: {post.author}</span>
-                <span className="post-category">Category: {post.category}</span>
-                <span className="post-date">Posted on: {new Date(post.createdAt).toLocaleDateString()}</span>
+                <span className="post-category">Category: {post.categories.join(', ')}</span>
+                <span className="post-category">Read: {post.minutes_to_read} mins</span>
+                <span className="post-date">Posted on: {new Date(post.created_at).toLocaleDateString()}</span>
             </div>
 
             {/* Comments Section */}
             <div className="comments-section">
                 <h3>Comments</h3>
                 <ul className="comments-list">
-                    {comments.map((comment) => (
+                    {post.comments.map((comment) => (
                         <li key={comment.id} className="comment-item">
                             <strong>{comment.username}:</strong> {comment.content}
                         </li>
                     ))}
                 </ul>
 
-                {/* Add Comment Form */}
-                <form className="comment-form" onSubmit={handleCommentSubmit}>
+                {/* New Comment Form */}
+                <form onSubmit={handleSubmitComment} className="comment-form">
                     <textarea
-                        className="comment-input"
-                        placeholder="Write a comment..."
                         value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                    ></textarea>
-                    <button type="submit" className="comment-submit-btn">
-                        Post Comment
-                    </button>
+                        onChange={handleCommentChange}
+                        placeholder="Write your comment here..."
+                        className="comment-input"
+                    />
+                    <button type="submit" className="comment-submit">Post Comment</button>
+                    {error && <p className="error-message">{error}</p>}
                 </form>
             </div>
         </div>
