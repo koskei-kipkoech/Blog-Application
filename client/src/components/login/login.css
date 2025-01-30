@@ -17,9 +17,10 @@
 }
 .loginForm > label{
     margin: 10px 0;
+    font-weight: 800;
 }
 .loginInput{
-    padding: 10px 50px;
+    padding: 15px 70px;
     background-color: white;
     border: none;
     max-width: 80%;
@@ -40,7 +41,7 @@
 }
 .loginRegisterButton{
     position: absolute;
-    top: 60px;
+    top: 70px;
     right: 20px;
     background-color: teal;
     cursor: pointer;

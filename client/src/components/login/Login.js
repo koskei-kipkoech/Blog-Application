@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './login.css'
 import {useState} from 'react'
 
@@ -35,7 +36,7 @@ export default function Login(){
                 <button className="loginButton" type="submit">Login</button>
             </form>
             {errorMessage && <p className='error'>{errorMessage}</p>}
-            <button className="loginRegisterButton">Register</button>
+            <button className="loginRegisterButton"><Link className='link' to='/register'>Register</Link></button>
             
         </div>
     )
