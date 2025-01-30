@@ -18,9 +18,10 @@
 }
 .registerForm > label{
     margin: 11px 0;
+    font-weight: 800;
 }
 .registerInput{
-    padding: 10px 50px;
+    padding: 15px 70px;
     background-color: white;
     border: 1px solid black;
     border-radius: 5px;
@@ -37,7 +38,7 @@
 }
 .registerLoginButton{
     position: absolute;
-    top: 60px;
+    top: 70px;
     right: 20px;
     background-color: lightcoral;
     cursor: pointer;

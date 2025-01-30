@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './register.css'
 import React,{useState} from 'react';
 
@@ -51,7 +52,7 @@ export default function Register(){
                     className="registerInput"
                     value={userType}
                     onChange={(e) => setUserType(e.target.value)}>
-                    <option value="">Select a user type</option>
+                    <option value="">Select User type</option>
                     <option value="1">Reader</option>
                     <option value="2">Admin</option>
                     <option value="3">Author</option>
@@ -60,7 +61,7 @@ export default function Register(){
         </form>
         {error && <p className="error">{error}</p>}
         <button className="registerLoginButton">
-            Login
+            <Link className='link' to='/login'>Login</Link>
         </button>
     </div>
     )
