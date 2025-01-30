@@ -10,7 +10,13 @@ export default function Postdetails() {
     const navigate = useNavigate();
 
     const userId = localStorage.getItem('userId');
+    if (!userId) {
+        console.log('User ID not found in localStorage');
+    }
+    
+
     useEffect(() => {
+        
         fetch(`http://127.0.0.1:5555/post/${postId}`)
             .then((response) => response.json())
             .then((data) => setPost(data))
@@ -34,7 +40,7 @@ export default function Postdetails() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ content: newComment }), // Send the new comment
+                body: JSON.stringify({ content: newComment }), 
             });
 
             if (!response.ok) {
@@ -44,7 +50,7 @@ export default function Postdetails() {
             const addedComment = await response.json();
             setPost((prevPost) => ({
                 ...prevPost,
-                comments: [...prevPost.comments, addedComment], // Update UI with new comment
+                comments: [...prevPost.comments, addedComment], 
             }));
 
             setNewComment('');
@@ -54,6 +60,41 @@ export default function Postdetails() {
             setError("Failed to add comment.");
         }
     };
+    const handleUpdateClick = () => {
+        navigate(`/update/${postId}`); 
+    };
+    const handleDeleteClick = () => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this post?");
+        if (confirmDelete) {
+            const token = localStorage.getItem("token"); 
+            if (!token) {
+                alert("You need to be logged in to delete a post.");
+                return;
+            }
+    
+            fetch(`http://127.0.0.1:5555/post/${postId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((data) => {
+                        throw new Error(data.message || "Failed to delete the post.");
+                    });
+                }
+                // Navigate back to the home page after deletion
+                navigate('/');
+            })
+            .catch((error) => {
+                console.error('Error deleting post:', error);
+                alert(error.message);
+            });
+        }
+    };
+    
 
     if (!post) {
         return <p>Loading post...</p>;
@@ -63,12 +104,15 @@ export default function Postdetails() {
         <div className="post-container">
             <h1 className="post-title">{post.title}</h1>
             <span className="post-author">Author: {post.user_id}</span>
+            
             <img src={post.image} alt={post.title} className="post-image" />
             <p className="post-content">{post.content}</p>
             <div className="post-meta">
                 <span className="post-category">Category: {post.categories.join(', ')}</span>
                 <span className="post-category">Read: {post.minutes_to_read} mins</span>
                 <span className="post-date">Posted on: {new Date(post.created_at).toLocaleDateString()}</span>
+                <span className='update' onClick={handleUpdateClick}>✏️</span>
+                <span className='delete' onClick={handleDeleteClick}>🗑️</span>
             </div>
 
             {/* Comments Section */}

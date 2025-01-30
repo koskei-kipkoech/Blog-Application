@@ -77,3 +77,14 @@
 .comment-submit-btn:hover {
     background-color: #0056b3;
 }
+.delete{
+    font-size: 30px;
+    cursor: pointer;
+    display: flex ;
+
+}
+.update{
+    font-size: 30px;
+    cursor: pointer;
+    display: flex;
+}
