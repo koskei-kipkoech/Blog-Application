@@ -1,27 +1,46 @@
-.header{
+.header {
     margin-top: 60px;
 }
-.headerTitles{
+
+.headerTitles {
     display: flex;
     flex-direction: column;
     align-items: center;
     font-family: 'Lora', serif;
     color: #444;
 }
-.headerTitleSm{
+
+.headerTitleSm {
     padding: absolute;
     top: 18%;
     font-size: 20px;
-
 }
-.headerTitleLg{
+
+.headerTitleLg {
     position: absolute;
     top: 20%;
     font-size: 100px;
 }
-.headerImg{
+
+.headerImg {
     width: 100%;
     height: 600px;
     margin-top: 80px;
     object-fit: cover;
+}
+
+.quoteSlideshow {
+    position: absolute;
+    top: 60%;
+    width: 100%;
+    text-align: center;
+    font-size: 30px;
+    color: rgb(135, 166, 72);
+    font-family: 'Arial', sans-serif;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+}
+.quoteAuthor{
+    color: yellow;
+    font-style: italic;
 }
