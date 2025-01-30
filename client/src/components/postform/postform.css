@@ -1,14 +1,12 @@
-/* Container for the entire form */
 .postform-container {
-    max-width: 500px;
-    margin: 50px auto;
+    max-width: 700px;
+    margin: 20px auto;
     padding: 20px;
-    background-color: url('https://img.freepik.com/free-photo/orange-purple-confetti-with-copy-space_23-2148294709.jpg?t=st=1738056679~exp=1738060279~hmac=c3e7c0bbded54dbee3a0d731e59378e480cc48af568427520eaa582ee8e01bb9&w=1380');
+    background-color: url('https://img.freepik.com/free-vector/digital-global-connection-network-technology-background_1017-23324.jpg?t=st=1738228817~exp=1738232417~hmac=daa5628b2c487a9a244c85d16439547bc3233d31d29d2dd40cfda26f7ba983a1&w=1800');
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Form title */
 .form-title {
     font-size: 24px;
     font-weight: bold;
@@ -16,15 +14,16 @@
     text-align: center;
     margin-bottom: 20px;
 }
-
-/* General form styling */
+.form-title:hover {
+    color: goldenrod;
+    cursor: pointer;
+}
 .post-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-/* Form group for label and input/textarea */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -32,6 +31,7 @@
 
 label {
     font-size: 14px;
+    font-weight: 600;
     color: #555;
     margin-bottom: 6px;
 }
