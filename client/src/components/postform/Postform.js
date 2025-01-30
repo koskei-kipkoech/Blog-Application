@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './postform.css';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Postform() {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         title: '',
         image: '',
         content: '',
-        category: [],  // Keep category as an array
+        category: [],  
         preview: '',
         minutes_to_read: 0
     });
@@ -19,7 +22,7 @@ export default function Postform() {
                 const response = await fetch('http://127.0.0.1:5555/categories');
                 if (response.ok) {
                 const data = await response.json();
-                setCategories(data); // Set categories from API
+                setCategories(data); 
                 } else {
                 console.error('Failed to fetch categories');
                 }
@@ -46,7 +49,7 @@ export default function Postform() {
 
         const handleChange = (e) => {
             const { name, value, checked } = e.target;
-            const categoryId = Number(value); // Convert value to number
+            const categoryId = Number(value); 
         
             if (name === "category") {
                 setFormData((prevData) => {
@@ -59,18 +62,12 @@ export default function Postform() {
                     } else {
                         newCategories = newCategories.filter((id) => id !== categoryId);
                     }
-        
                     return { ...prevData, category: newCategories };
                 });
             } else {
                 setFormData((prevData) => ({ ...prevData, [name]: value }));
             }
         };
-        
-        
-        
-        
-
         const handleSubmit = async (e) => {
             e.preventDefault();
         
@@ -88,7 +85,7 @@ export default function Postform() {
                 preview,
                 minutes_to_read,
                 image,
-                category,  // Send category IDs as an array
+                category,  
             };
         
             try {
@@ -104,6 +101,7 @@ export default function Postform() {
                 const data = await response.json();
                 if (response.ok) {
                     alert('Post created successfully');
+                    navigate('/')
                 } else {
                     alert(`Error: ${data.message}`);
                 }
