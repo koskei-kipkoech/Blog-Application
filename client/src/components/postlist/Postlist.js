@@ -12,28 +12,59 @@ export default function Postlist() {
     }, []);
 
     const handleLike = (postId) => {
+        const token = localStorage.getItem('token'); // Retrieve token from storage
+    
+        if (!token) {
+            console.error("Error: Token is missing!");
+            return;
+        }
+    
         fetch(`http://127.0.0.1:5555/post/${postId}/like`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add token in the header
+            },
+            body: JSON.stringify({})
         })
-        .then((response) => response.json())
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message); });
+            }
+            return response.json();
+        })
         .then((data) => {
             setPosts(prevPosts =>
                 prevPosts.map(post =>
-                    post.id === postId ? { ...post, is_liked: !post.is_liked } : post
+                    post.id === postId ? { ...post, is_liked: data.is_liked } : post
                 )
             );
         })
-        .catch((error) => console.error('Error updating like status', error));
+        .catch((error) => console.error('Error updating like status:', error));
     };
-
-    // Function to toggle Favorite
+    
     const handleFavorite = (postId) => {
+        const token = localStorage.getItem('token'); // Retrieve token from storage
+    
+        if (!token) {
+            console.error("Error: Token is missing!");
+            return;
+        }
+    
         fetch(`http://127.0.0.1:5555/post/${postId}/favorite`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Add token in the header
+            },
+            body: JSON.stringify({})
         })
-        .then((response) => response.json())
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message); });
+            }
+            return response.json();
+        })
         .then((data) => {
             setPosts(prevPosts =>
                 prevPosts.map(post =>
@@ -41,8 +72,11 @@ export default function Postlist() {
                 )
             );
         })
-        .catch((error) => console.error('Error updating favorite status', error));
+        .catch((error) => console.error('Error updating favorite status:', error));
     };
+    
+    
+    
     return (<>
         <h1 className="title">Blog Posts</h1>
         <div className="postlist-container">
