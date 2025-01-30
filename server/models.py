@@ -10,7 +10,7 @@ from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
-# User Type Model
+# UserType Model
 class UserType(db.Model, SerializerMixin):
     __tablename__ = 'user_types'
 
@@ -76,6 +76,12 @@ class Category(db.Model, SerializerMixin):
 
     posts = db.relationship('Post', secondary='post_category', back_populates='categories')
 
+    def to_dict(self):
+        return{
+            'id': self.id,
+            'name': self.name,
+
+        }
     def __repr__(self):
         return f"<Category {self.name}>"
 
@@ -84,7 +90,7 @@ class Post(db.Model, SerializerMixin):
     __tablename__ = 'posts'
     __table_args__ = (
         CheckConstraint('minutes_to_read > 0', name='check_minutes_to_read'),
-        Index('ix_post_user_id', 'user_id')  # Adding index separately
+        Index('ix_post_user_id', 'user_id')  
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -103,6 +109,23 @@ class Post(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='posts')
     comments = db.relationship('Comment', back_populates='post', cascade='all, delete-orphan')
     categories = db.relationship('Category', secondary='post_category', back_populates='posts')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            'title': self.title,
+            'content' : self.content,
+            'image' : self.image,
+            'preview' : self.preview,
+            'minutes_to_read': self.minutes_to_read,
+            'is_favourite': self.is_favourite,
+            'is_liked': self.is_liked,
+            'published': self.published,
+            'user_id': self.user.username if self.user else None,
+            'categories': [category.name for category in self.categories],
+            'comments': [comment.id for comment in self.comments],
+            'created_at' :  self.created_at
+        }
 
     def __repr__(self):
         return f"<Post {self.title}>"
@@ -131,6 +154,14 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     post = db.relationship('Post', back_populates='comments')
+
+    def to_dict(self):
+        return{
+            "id": self.id,
+            'content' : self.content,
+            'created_at': self.created_at,
+            'username' : Comment.user.username
+        }
 
     def __repr__(self):
         return f"<Comment {self.id} on Post {self.post_id}>"
