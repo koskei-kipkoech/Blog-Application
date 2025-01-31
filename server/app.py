@@ -322,14 +322,14 @@ def delete_post(current_user, post_id):
 @app.route('/posts/liked', methods=['GET'])
 @token_required
 def get_liked_posts(current_user):
-    liked_posts = Post.query.filter_by(is_liked=True).all()
+    liked_posts = Post.query.filter(Post.user_id == current_user.id, Post.is_liked==True).all()
     return jsonify([{"id": post.id, "title": post.title, "image": post.image, "preview": post.preview} for post in liked_posts])
 
 
 @app.route('/posts/favorites', methods=['GET'])
 @token_required
 def get_favorite_posts(current_user):
-    favorite_posts = Post.query.filter_by(is_favourite=True).all()
+    favorite_posts = Post.query.filter(Post.user_id == current_user.id, Post.is_favourite==True).all()
     return jsonify([{"id": post.id, "title": post.title, "image": post.image, "preview": post.preview} for post in favorite_posts])
 
 @app.route('/post/<int:post_id>/like', methods=['PATCH'])
@@ -392,6 +392,30 @@ def add_comment(post_id):
         'username': post.user.username  
     }), 201
 
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query', '')
+    category = request.args.get('category', '')
+    if not query:
+        return jsonify({"message": "Query parameter is required"}), 400
+    try:
+        posts = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
+        if not posts:
+            posts = []
+        comments = Comment.query.filter(Comment.content.ilike(f'%{query}%')).all()
+        users = User.query.filter(User.username.ilike(f'%{query}%')).all()
+        if category:
+            posts = [post for post in posts if any(cat.name == category for cat in post.categories)]
+        result_posts = [post.to_dict() for post in posts]
+        result_comments = [comment.to_dict() for comment in comments]
+        result_users = [user.to_dict() for user in users]
 
+        return jsonify({
+            'posts': result_posts,
+            'comments': result_comments,
+            'users': result_users
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
