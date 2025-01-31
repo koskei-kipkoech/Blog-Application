@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 import UpdatePost from "./components/updatepost/Update";
+import Search from "./components/search/Search";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/postlist" element={<ProtectedRoute element={<Postlist />} />} />
           <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
           <Route path="/favliked" element={<ProtectedRoute element={<FavouriteLikedPost />} />} />
+          <Route path="/search" element={<ProtectedRoute element={<Search />} />} />
         </Routes>
       </Router>
     </AuthProvider>
