@@ -33,11 +33,16 @@ export default function Postdetails() {
             setError("Comment cannot be empty.");
             return;
         }
-
+        const token = localStorage.getItem("token"); 
+        if (!token) {
+            setError("You need to be logged in to add a comment.");
+            return;
+        }
         try {
             const response = await fetch(`http://127.0.0.1:5555/comments/post/${postId}`, {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ content: newComment }), 
@@ -85,7 +90,6 @@ export default function Postdetails() {
                         throw new Error(data.message || "Failed to delete the post.");
                     });
                 }
-                // Navigate back to the home page after deletion
                 navigate('/');
             })
             .catch((error) => {
@@ -115,7 +119,6 @@ export default function Postdetails() {
                 <span className='delete' onClick={handleDeleteClick}>🗑️</span>
             </div>
 
-            {/* Comments Section */}
             <div className="comments-section">
                 <h3>Comments</h3>
                 <ul className="comments-list">
@@ -126,7 +129,6 @@ export default function Postdetails() {
                     ))}
                 </ul>
 
-                {/* New Comment Form */}
                 <form onSubmit={handleSubmitComment} className="comment-form">
                     <textarea
                         value={newComment}
