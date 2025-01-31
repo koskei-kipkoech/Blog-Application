@@ -21,7 +21,7 @@ export default function Navbarr() {
                     {user ? (
                         <>
                             <li className="topListItem"><Link className="link" to="/postform">ADDPOST</Link></li>
-                            <li className="topListItem"><Link className="link" to="/">FAVOURITES</Link></li>
+                            <li className="topListItem"><Link className="link" to="/search">SEARCH</Link></li>
                             <li className="topListItem"><Link className="link" to="/favliked">FAV/LIKED</Link></li>
                             <li className="topListItem" onClick={logout} style={{ cursor: "pointer" }}>LOGOUT</li>
                         </>
