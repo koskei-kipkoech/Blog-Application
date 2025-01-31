@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export default function Search() {
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('');
-    const [categories, setCategories] = useState([]); // To store categories
+    const [categories, setCategories] = useState([]); 
     const [results, setResults] = useState({ posts: [], comments: [], users: [] });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
