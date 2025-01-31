@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,g
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api
@@ -41,6 +41,23 @@ def token_required(f):
             return jsonify({"message": "Invalid token!"}), 401
         return f(current_user, *args, **kwargs)  
     return decorated_function
+
+
+def role_required(required_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(current_user, *args, **kwargs):
+            if not current_user:
+                return jsonify({"error": "Unauthorized"}), 403
+
+            print(f"User {current_user.username} has role: {current_user.user_type.type_name}")  # Debugging
+
+            if current_user.user_type.type_name not in required_roles:
+                return jsonify({"error": "Access forbidden: Insufficient permissions"}), 403
+
+            return f(current_user, *args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 #register route
@@ -191,7 +208,7 @@ def get_post(post_id):
     ]
     post_data = {
         'title': post.title,
-        'user_id': post.user.id,
+        'user_id': post.user.username,
         'image': post.image,
         'content': post.content,
         'categories': [category.name for category in post.categories],
@@ -204,6 +221,7 @@ def get_post(post_id):
 
 @app.route('/post', methods=['POST'])
 @token_required
+@role_required(['Admin', 'Author'])
 def create_post(current_user):
     data = request.get_json()
     required_fields = ['title', 'content', 'preview', 'minutes_to_read', 'category']  
@@ -247,6 +265,7 @@ def create_post(current_user):
 
 @app.route('/post/<int:post_id>', methods=['PATCH'])
 @token_required
+@role_required(['Admin','Author'])
 def update_post(current_user, post_id):
     post = db.session.get(Post, post_id)
     if not post:
@@ -310,13 +329,18 @@ def update_post(current_user, post_id):
 
 @app.route('/post/<int:post_id>', methods=['DELETE'])
 @token_required
+@role_required(['Admin','Author'])
 def delete_post(current_user, post_id):
     post = Post.query.get_or_404(post_id)
-    if post.user_id != current_user.id:
-        return jsonify({"message": "You can only delete your own posts"}), 403
-    db.session.delete(post)
-    db.session.commit()
-    return jsonify({"message": "Post deleted successfully"}), 200
+    if current_user.user_type.type_name != "Admin" and post.user_id != current_user.id:
+        return jsonify({"message": "You can only delete your own posts!"}), 403
+    try:
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({"message": "Post deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to delete post", "error": str(e)}), 500
 
 
 @app.route('/posts/liked', methods=['GET'])
@@ -396,16 +420,24 @@ def add_comment(post_id):
 def search():
     query = request.args.get('query', '')
     category = request.args.get('category', '')
+    
     if not query:
         return jsonify({"message": "Query parameter is required"}), 400
+    
     try:
-        posts = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
-        if not posts:
-            posts = []
+        posts_query = Post.query.filter(
+            Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')
+        )
+        
+        if category:
+            posts_query = posts_query.join(Post.categories).filter(Category.name == category)
+        
+        posts = posts_query.all()
+        
+        # Search comments by content
         comments = Comment.query.filter(Comment.content.ilike(f'%{query}%')).all()
         users = User.query.filter(User.username.ilike(f'%{query}%')).all()
-        if category:
-            posts = [post for post in posts if any(cat.name == category for cat in post.categories)]
+
         result_posts = [post.to_dict() for post in posts]
         result_comments = [comment.to_dict() for comment in comments]
         result_users = [user.to_dict() for user in users]
@@ -417,5 +449,6 @@ def search():
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
